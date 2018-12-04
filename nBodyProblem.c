@@ -1,9 +1,10 @@
 // © University of Liverpool
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-#define BODIES 5000
-#define TIMESTEPS 100
+#define BODIES 50 //5000
+#define TIMESTEPS 10 //100
 #define GRAVCONST 0.0000001
 
 // global vars
@@ -27,20 +28,20 @@ int main(void) {
     for (i=0; i<BODIES; i++) {
       // calc forces on body i due to bodies (j != i)
       for (j=0; j<BODIES; j++) {
-	if (j != i) {
-	  dx = x[j] - x[i];
-	  dy = y[j] - y[i];
-	  d = sqrt(dx*dx + dy*dy); 
-	  if (d<0.01) {
-	    printf("too close - resetting\n");
-	    d=1.0;
-	  }
-	  F = GRAVCONST * mass[i] * mass[j] / (d*d);
-	  ax = (F/mass[i]) * dx/d;
-	  ay = (F/mass[i]) * dy/d;
-	  vx[i] += ax;
-	  vy[i] += ay;
-	}
+          if (j != i) {
+            dx = x[j] - x[i];
+            dy = y[j] - y[i];
+            d = sqrt(dx*dx + dy*dy); 
+            if (d<0.01) {
+              printf("too close - resetting\n");
+              d=1.0;
+            }
+            F = GRAVCONST * mass[i] * mass[j] / (d*d);
+            ax = (F/mass[i]) * dx/d;
+            ay = (F/mass[i]) * dy/d;
+            vx[i] += ax;
+            vy[i] += ay;
+          }
       } // body j
     } // body i
 
