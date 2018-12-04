@@ -1,0 +1,9 @@
+#Ignore Latex related files
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
+
+# Ignore .log files
+*.log
