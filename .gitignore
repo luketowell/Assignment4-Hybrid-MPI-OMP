@@ -7,3 +7,6 @@
 
 # Ignore .log files
 *.log
+
+# Ignore .exe files
+*.exe
