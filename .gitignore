@@ -8,5 +8,6 @@
 # Ignore .log files
 *.log
 
-# Ignore .exe files
+# Ignore .exe and .out files
 *.exe
+*.out
