@@ -1,0 +1,146 @@
+    Report from: Interprocedural optimizations [ipo]
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+Begin optimization report for: main(void)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (main(void)) [1] serialCode.c(18,16)
+  -> INLINE: (22,3) randomInit()
+    -> EXTERN: (65,30) rand(void)
+    -> EXTERN: (67,34) rand(void)
+    -> EXTERN: (68,34) rand(void)
+    -> EXTERN: (70,31) rand(void)
+    -> EXTERN: (71,31) rand(void)
+    -> EXTERN: (73,3) printf(const char *__restrict__, ...)
+  -> EXTERN: (25,5) printf(const char *__restrict__, ...)
+  -> EXTERN: (34,6) printf(const char *__restrict__, ...)
+  -> EXTERN: (53,5) printf(const char *__restrict__, ...)
+  -> EXTERN: (55,3) printf(const char *__restrict__, ...)
+  -> INLINE: (57,5) outputBody(int)
+    -> EXTERN: (112,3) printf(const char *__restrict__, ...)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at serialCode.c(64,3) inlined into serialCode.c(22,3)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 65 and  line 71
+LOOP END
+
+LOOP BEGIN at serialCode.c(24,3)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at serialCode.c(26,5)
+      remark #15541: outer loop was not auto-vectorized: consider using SIMD directive
+
+      LOOP BEGIN at serialCode.c(28,7)
+      <Predicate Optimized v1>
+         remark #25423: Condition at line 29 hoisted out of this loop
+         remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+         remark #15346: vector dependence: assumed OUTPUT dependence between d line 32 and d line 35
+      LOOP END
+
+      LOOP BEGIN at serialCode.c(28,7)
+      <Predicate Optimized v2>
+         remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+         remark #15346: vector dependence: assumed OUTPUT dependence between d line 32 and d line 35
+      LOOP END
+   LOOP END
+
+   LOOP BEGIN at serialCode.c(47,5)
+      remark #15300: LOOP WAS VECTORIZED
+      remark #15448: unmasked aligned unit stride loads: 4
+      remark #15449: unmasked aligned unit stride stores: 2
+      remark #15475: --- begin vector loop cost summary ---
+      remark #15476: scalar loop cost: 13
+      remark #15477: vector loop cost: 10.000
+      remark #15478: estimated potential speedup: 5.160
+      remark #15479: lightweight vector operations: 10
+      remark #15488: --- end vector loop cost summary ---
+      remark #25015: Estimate of max trip count of loop=312
+   LOOP END
+
+   LOOP BEGIN at serialCode.c(47,5)
+   <Remainder>
+      remark #15301: REMAINDER LOOP WAS VECTORIZED
+      remark #25015: Estimate of max trip count of loop=2
+   LOOP END
+LOOP END
+
+LOOP BEGIN at serialCode.c(56,3)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+LOOP END
+===========================================================================
+
+Begin optimization report for: outputBody(int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (outputBody(int)) [2] serialCode.c(111,24)
+  -> EXTERN: (112,3) printf(const char *__restrict__, ...)
+
+===========================================================================
+
+Begin optimization report for: testInit2()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (testInit2()) [3] serialCode.c(92,18)
+
+===========================================================================
+
+Begin optimization report for: testInit()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (testInit()) [4] serialCode.c(78,17)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at serialCode.c(81,3)
+   remark #15300: LOOP WAS VECTORIZED
+   remark #15449: unmasked aligned unit stride stores: 5
+   remark #15475: --- begin vector loop cost summary ---
+   remark #15476: scalar loop cost: 18
+   remark #15477: vector loop cost: 8.500
+   remark #15478: estimated potential speedup: 4.230
+   remark #15479: lightweight vector operations: 17
+   remark #15487: type converts: 2
+   remark #15488: --- end vector loop cost summary ---
+   remark #25015: Estimate of max trip count of loop=625
+LOOP END
+===========================================================================
+
+Begin optimization report for: randomInit()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (randomInit()) [5] serialCode.c(62,19)
+  -> EXTERN: (65,30) rand(void)
+  -> EXTERN: (67,34) rand(void)
+  -> EXTERN: (68,34) rand(void)
+  -> EXTERN: (70,31) rand(void)
+  -> EXTERN: (71,31) rand(void)
+  -> EXTERN: (73,3) printf(const char *__restrict__, ...)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at serialCode.c(64,3)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 65 and  line 71
+LOOP END
+===========================================================================
