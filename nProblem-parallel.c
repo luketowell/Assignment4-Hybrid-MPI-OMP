@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
   int mpiId, numMPI;
   int ompId, numOMP;
   double timings[10];
+  int N = BODIES*TIMESTEPS;
 
   //init MPI
   MPI_Init(NULL, NULL);
@@ -35,61 +36,79 @@ int main(int argc, char** argv) {
      printf("%d \n", numOMP);
   }
   
-
-  // testInit2();
-  timings[0] = omp_get_wtime();
-  randomInit();
-  //this needs to be parallelized
-  for (time=0; time<TIMESTEPS; time++) {
-    printf("Timestep %d\n",time);
-    timings[2]= omp_get_wtime();
-    for (i=0; i<BODIES; i++) {
-      // calc forces on body i due to bodies (j != i)
-      for (j=0; j<BODIES; j++) {
-	if (j != i) {
-	  dx = x[j] - x[i];
-	  dy = y[j] - y[i];
-	  d = sqrt(dx*dx + dy*dy); 
-	  if (d<0.01) {
-	    printf("too close - resetting\n");
-	    d=1.0;
-	  }
-	  F = GRAVCONST * mass[i] * mass[j] / (d*d);
-	  ax = (F/mass[i]) * dx/d;
-	  ay = (F/mass[i]) * dy/d;
-	  vx[i] += ax;
-	  vy[i] += ay;
-	}
-      } // body j
-    } // body i
-    timings[3] = omp_get_wtime();
-
-    // having worked out all velocities we now apply and determine new position
-    timings[4] = omp_get_wtime();
-    for (i=0; i<BODIES; i++) {
-      x[i] += vx[i];
-      y[i] += vy[i];
-      //DEBUG ONLY: outputBody(i);
-    }
-    timings[5] = omp_get_wtime();
-
-    printf("---\n");
-  } // time
-  printf("Final data\n");
-  for (i=0; i<BODIES; i++) {
-    outputBody(i);
+  if (N < numMPI*numOMP) {
+    if (mpiId ==0 ) printf("too trivial\n");    // we do not cater for idle cores
   }
-  timings[1] = omp_get_wtime();
-  printf("Whole execution: %0.6f\n", (timings[1] - timings[0])*1000);
-  printf("timing for init: %0.6f\n", (timings[2] - timings[1])*1000);
-  printf("timing for velocities: %0.6f\n", (timings[3] - timings[2])*1000);
-  printf("timing for new position: %0.6f \n", (timings[5]-timings[4])*1000);
+  else if (N%(numMPI*numOMP) != 0) {
+    if (mpiId ==0 ) printf("too complex\n");    // we only have MPI_Scatter
+  }
+  else {
+    if (mpiId == 0){
+    // testInit2();
+    timings[0] = omp_get_wtime();
+    randomInit();
+    //this needs to be parallelized with MPI
+    //Scatter the variables to the nodes
+    }
+    for (time=0; time<TIMESTEPS; time++) {
+      printf("Timestep %d\n",time);
+      timings[2]= omp_get_wtime();
+      // can this be parallelised by openMP?
+      for (i=0; i<BODIES; i++) {
+        // calc forces on body i due to bodies (j != i)
+        for (j=0; j<BODIES; j++) {
+            if (j != i) {
+              dx = x[j] - x[i];
+              dy = y[j] - y[i];
+              d = sqrt(dx*dx + dy*dy); 
+              if (d<0.01) {
+                printf("too close - resetting\n");
+                d=1.0;
+              }
+              F = GRAVCONST * mass[i] * mass[j] / (d*d);
+              ax = (F/mass[i]) * dx/d;
+              ay = (F/mass[i]) * dy/d;
+              vx[i] += ax;
+              vy[i] += ay;
+            }
+        } // body j
+      } // body i
+      //gather the variables back in
+      timings[3] = omp_get_wtime();
+
+      // having worked out all velocities we now apply and determine new position
+      timings[4] = omp_get_wtime();
+      //openMP the variables.
+      for (i=0; i<BODIES; i++) {
+        x[i] += vx[i];
+        y[i] += vy[i];
+        //DEBUG ONLY: outputBody(i);
+      }
+      timings[5] = omp_get_wtime();
+
+      printf("---\n");
+    } // time
+    if (mpiId ==0 ){
+      printf("Final data\n");
+      for (i=0; i<BODIES; i++) {
+        outputBody(i);
+      }
+    timings[1] = omp_get_wtime();
+    printf("Whole execution: %0.6f\n", (timings[1] - timings[0])*1000);
+    printf("timing for init: %0.6f\n", (timings[2] - timings[1])*1000);
+    printf("timing for velocities: %0.6f\n", (timings[3] - timings[2])*1000);
+    printf("timing for new position: %0.6f \n", (timings[5]-timings[4])*1000);
+    }
+  }
+
+  MPI_Finalize();
 }
 
 
 //Parallelise the printing
 void randomInit() {
   int i;
+  #pragma omp parallel for private(i) reduction(+:mass, x, y, vx, vy) shared(BODIES)
   for (i=0; i<BODIES; i++) {
     mass[i] = 0.001 + (float)rand()/(float)RAND_MAX;            // 0.001 to 1.001
 
