@@ -12,7 +12,7 @@ ________________
 <h2>Compiling on the Machine</h2>
 
 initial compilation of the Serial Code using the intel compiler
-`icc icc serialCode.c -qopt-report3 -O2`
+`icc serialCode.c -qopt-report3 -O2`
 
 This produced the compiler output file [serialCode.optrpt](serialCode.optrpt)
 
@@ -22,9 +22,19 @@ Throughout the output report the compiler has highlighted that its changed shoul
 
 <img src="images/compilerTimings.png" width=400px/>
 
+compiling in parallel: 
+
+In order to compile in parallel I used the following command which compiles with the mpi intel compiler and also uses -qopenmp to indicate the use of openMp within the code base. 
+`mpiicc -qopenmp -O2 -qopt-report3 nproblem.c -o ./nproblem-parallel.exe`
+
 <h2>Profiling</h2>
 
 <h3>Profiling the code on the machine</h3>
+
+Profiled the code at the beginning of the project using the VTune application to view analyse the code hotspots when running the program. figure 2 shows the breakdown of code usage amongst functions. 
+
+In order to profile the code I ran the following command:
+`/opt/software/intel/vtune_amplifier_2018.0.2.525261/bin64/amplxe-cl -collect hotspots -app-working-dir /home/sgltowel/COMP528/Assignment4 -- /home/sgltowel/COMP528/Assignment4/SerialNbody-icc-O0.exe`
 
 <h3>Accessing profiling files from remote servers </h3>
 
