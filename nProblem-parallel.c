@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
 
   //figured out the numLocal;
   int numLocal = BODIES/numMPI;
+  float local_x[numLocal], local_y[numLocal];
   printf("%d \n", numLocal);	
   #pragma omp parallel default(none) shared(numOMP)
   {
@@ -48,27 +49,26 @@ int main(int argc, char** argv) {
 		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
   else {
+    //thread 0 initialises all the values
     if (mpiId == 0){
-    // testInit2();
-    timings[0] = omp_get_wtime();
     randomInit();
     }
+    //work out the start positions and the end positions for all of the nodes
     int start = mpiId*numLocal;
-    printf("start %d \n", start);
     int end = (mpiId * numLocal) + numLocal;
-    printf("start %d \n", end);
     //broadcast out the values of the arrays.
     MPI_Bcast(&vy,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
     MPI_Bcast(&vx,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
     MPI_Bcast(&x,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
     MPI_Bcast(&y,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
-    printf("Broadcast successful");
-    //this needs to be parallelized with MPI
-    //BCast the variables to the nodes
+    MPI_Bcast(&mass,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
+    
+
+    // each time step is performed by every mpi thread
     for (time=0; time<TIMESTEPS; time++) {
       printf("Timestep %d\n",time);
-      timings[2]= omp_get_wtime();
-      // can this be parallelised by openMP?
+      //each thread core works out the position of a different collection of bodies e.g. the zero node will work out the positions and velocities of 625 bodies
+
       for (i=start; i<end; i++) {
         // calc forces on body i due to bodies (j != i)
         for (j=start; j<end; j++) {
@@ -88,21 +88,17 @@ int main(int argc, char** argv) {
             }
         } // body j
       } // body i
-      //gather the variables back in
-      //MPI_Reduce(&localvx, &vx, numLocal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      //MPI_Reduce(&localvy, &vy, numLocal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      timings[3] = omp_get_wtime();
 
       // having worked out all velocities we now apply and determine new position
-      timings[4] = omp_get_wtime();
-      //openMP the variables.
-      for (i=0; i<BODIES; i++) {
-        x[i] += vx[i];
-        y[i] += vy[i];
-        //DEBUG ONLY: outputBody(i);
+      //#pragma omp parallel for default(none) private(i, start, end) shared(local_x, local_y, x, y, vx, vy)
+      for (i=0; i<numLocal; i++) {
+        local_x[i] = x[i+start] += vx[i+start];
+        local_y[i] = y[i+start] += vy[i+start];
+        // outputBody(i);
       }
-      timings[5] = omp_get_wtime();
-
+     
+      MPI_Allgather(&local_x, numLocal, MPI_FLOAT, &x, numLocal, MPI_FLOAT, MPI_COMM_WORLD);
+      MPI_Allgather(&local_y, numLocal, MPI_FLOAT, &y, numLocal, MPI_FLOAT, MPI_COMM_WORLD);
       printf("---\n");
     } // time
     if (mpiId ==0 ){
@@ -110,11 +106,6 @@ int main(int argc, char** argv) {
       for (i=0; i<BODIES; i++) {
         outputBody(i);
       }
-    timings[1] = omp_get_wtime();
-    printf("Whole execution: %0.6f\n", (timings[1] - timings[0])*1000);
-    printf("timing for init: %0.6f\n", (timings[2] - timings[1])*1000);
-    printf("timing for velocities: %0.6f\n", (timings[3] - timings[2])*1000);
-    printf("timing for new position: %0.6f \n", (timings[5]-timings[4])*1000);
     }
   }
 
