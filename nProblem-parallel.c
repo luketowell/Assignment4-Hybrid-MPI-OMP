@@ -13,6 +13,7 @@ float vx[BODIES], vy[BODIES];
 float x[BODIES], y[BODIES];
 float dx, dy, d, F, ax, ay;
 
+
 void testInit();
 void testInit2();
 void randomInit();
@@ -30,6 +31,9 @@ int main(int argc, char** argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &mpiId);
   MPI_Comm_size(MPI_COMM_WORLD, &numMPI);
 
+  //figured out the numLocal;
+  int numLocal = BODIES/numMPI;
+  printf("%d \n", numLocal);	
   #pragma omp parallel default(none) shared(numOMP)
   {
      numOMP = omp_get_num_threads();
@@ -39,24 +43,35 @@ int main(int argc, char** argv) {
   if (N < numMPI*numOMP) {
     if (mpiId ==0 ) printf("too trivial\n");    // we do not cater for idle cores
   }
-  else if (N%(numMPI*numOMP) != 0) {
-    if (mpiId ==0 ) printf("too complex\n");    // we only have MPI_Scatter
-  }
+  if (N%(numMPI*numOMP)!=0){
+		printf("the array length provided is not evenly divisible between nodes");
+		MPI_Abort(MPI_COMM_WORLD, 1);
+	}
   else {
     if (mpiId == 0){
     // testInit2();
     timings[0] = omp_get_wtime();
     randomInit();
-    //this needs to be parallelized with MPI
-    //Scatter the variables to the nodes
     }
+    int start = mpiId*numLocal;
+    printf("start %d \n", start);
+    int end = (mpiId * numLocal) + numLocal;
+    printf("start %d \n", end);
+    //broadcast out the values of the arrays.
+    MPI_Bcast(&vy,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
+    MPI_Bcast(&vx,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
+    MPI_Bcast(&x,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
+    MPI_Bcast(&y,BODIES,MPI_FLOAT,0,MPI_COMM_WORLD);
+    printf("Broadcast successful");
+    //this needs to be parallelized with MPI
+    //BCast the variables to the nodes
     for (time=0; time<TIMESTEPS; time++) {
       printf("Timestep %d\n",time);
       timings[2]= omp_get_wtime();
       // can this be parallelised by openMP?
-      for (i=0; i<BODIES; i++) {
+      for (i=start; i<end; i++) {
         // calc forces on body i due to bodies (j != i)
-        for (j=0; j<BODIES; j++) {
+        for (j=start; j<end; j++) {
             if (j != i) {
               dx = x[j] - x[i];
               dy = y[j] - y[i];
@@ -74,6 +89,8 @@ int main(int argc, char** argv) {
         } // body j
       } // body i
       //gather the variables back in
+      //MPI_Reduce(&localvx, &vx, numLocal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+      //MPI_Reduce(&localvy, &vy, numLocal, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
       timings[3] = omp_get_wtime();
 
       // having worked out all velocities we now apply and determine new position
@@ -108,7 +125,7 @@ int main(int argc, char** argv) {
 //Parallelise the printing
 void randomInit() {
   int i;
-  #pragma omp parallel for private(i) reduction(+:mass, x, y, vx, vy) shared(BODIES)
+  //#pragma omp parallel for private(i) reduction(+: mass, x, y, vx, vy) shared(BODIES)
   for (i=0; i<BODIES; i++) {
     mass[i] = 0.001 + (float)rand()/(float)RAND_MAX;            // 0.001 to 1.001
 
