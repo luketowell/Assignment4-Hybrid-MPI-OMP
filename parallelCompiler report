@@ -1,0 +1,182 @@
+    Report from: Interprocedural optimizations [ipo]
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+
+Begin optimization report for: main(int, char **)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (main(int, char **)) [1] parallelCode.c(22,33)
+  -> EXTERN: (30,3) MPI_Init(int *, char ***)
+  -> EXTERN: (31,3) MPI_Comm_rank(MPI_Comm, int *)
+  -> EXTERN: (32,3) MPI_Comm_size(MPI_Comm, int *)
+  -> EXTERN: (36,9) _vla_alloc(long)
+  -> EXTERN: (36,28) _vla_alloc(long)
+  -> EXTERN: (37,3) printf(const char *__restrict__, ...)
+  -> EXTERN: (40,15) omp_get_num_threads(void)
+  -> EXTERN: (41,6) printf(const char *__restrict__, ...)
+  -> EXTERN: (45,21) printf(const char *__restrict__, ...)
+  -> EXTERN: (48,3) printf(const char *__restrict__, ...)
+  -> EXTERN: (49,3) MPI_Abort(MPI_Comm, int)
+  -> INLINE: (54,5) randomInit()
+    -> EXTERN: (122,30) rand(void)
+    -> EXTERN: (124,34) rand(void)
+    -> EXTERN: (125,34) rand(void)
+    -> EXTERN: (127,31) rand(void)
+    -> EXTERN: (128,31) rand(void)
+    -> EXTERN: (130,3) printf(const char *__restrict__, ...)
+  -> EXTERN: (60,5) MPI_Bcast(void *, int, MPI_Datatype, int, MPI_Comm)
+  -> EXTERN: (61,5) MPI_Bcast(void *, int, MPI_Datatype, int, MPI_Comm)
+  -> EXTERN: (62,5) MPI_Bcast(void *, int, MPI_Datatype, int, MPI_Comm)
+  -> EXTERN: (63,5) MPI_Bcast(void *, int, MPI_Datatype, int, MPI_Comm)
+  -> EXTERN: (64,5) MPI_Bcast(void *, int, MPI_Datatype, int, MPI_Comm)
+  -> EXTERN: (69,7) printf(const char *__restrict__, ...)
+  -> EXTERN: (81,17) printf(const char *__restrict__, ...)
+  -> EXTERN: (101,7) MPI_Allgather(void *, int, MPI_Datatype, void *, int, MPI_Datatype, MPI_Comm)
+  -> EXTERN: (102,7) MPI_Allgather(void *, int, MPI_Datatype, void *, int, MPI_Datatype, MPI_Comm)
+  -> EXTERN: (103,7) printf(const char *__restrict__, ...)
+  -> EXTERN: (106,7) printf(const char *__restrict__, ...)
+  -> INLINE: (108,9) outputBody(int)
+    -> EXTERN: (170,3) printf(const char *__restrict__, ...)
+  -> EXTERN: (113,3) _vla_free(void *, long)
+  -> EXTERN: (113,3) _vla_free(void *, long)
+  -> EXTERN: (113,3) MPI_Finalize(void)
+
+
+    Report from: OpenMP optimizations [openmp]
+
+OpenMP Construct at parallelCode.c(38,3)
+   remark #16201: OpenMP DEFINED REGION WAS PARALLELIZED
+OpenMP Construct at parallelCode.c(94,7)
+   remark #16200: OpenMP DEFINED LOOP WAS PARALLELIZED
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at parallelCode.c(121,3) inlined into parallelCode.c(54,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 122 and  line 128
+LOOP END
+
+LOOP BEGIN at parallelCode.c(73,7)
+   remark #15541: outer loop was not auto-vectorized: consider using SIMD directive
+   remark #25015: Estimate of max trip count of loop=5000
+
+   LOOP BEGIN at parallelCode.c(75,9)
+      remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+      remark #25015: Estimate of max trip count of loop=5000
+   LOOP END
+LOOP END
+
+LOOP BEGIN at parallelCode.c(107,7)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+LOOP END
+
+LOOP BEGIN at parallelCode.c(95,7)
+<Peeled>
+   remark #25015: Estimate of max trip count of loop=5000
+LOOP END
+
+LOOP BEGIN at parallelCode.c(95,7)
+   remark #25427: Loop Statements Reordered
+   remark #15300: LOOP WAS VECTORIZED
+   remark #15448: unmasked aligned unit stride loads: 4 
+   remark #15449: unmasked aligned unit stride stores: 3 
+   remark #15451: unmasked unaligned unit stride stores: 1 
+   remark #15475: --- begin vector loop cost summary ---
+   remark #15476: scalar loop cost: 23 
+   remark #15477: vector loop cost: 6.000 
+   remark #15478: estimated potential speedup: 3.820 
+   remark #15479: lightweight vector operations: 22 
+   remark #15488: --- end vector loop cost summary ---
+   remark #25015: Estimate of max trip count of loop=1250
+LOOP END
+
+LOOP BEGIN at parallelCode.c(95,7)
+<Alternate Alignment Vectorized Loop>
+   remark #25015: Estimate of max trip count of loop=1250
+LOOP END
+
+LOOP BEGIN at parallelCode.c(95,7)
+<Remainder>
+   remark #25015: Estimate of max trip count of loop=5000
+LOOP END
+
+
+Non-optimizable loops:
+
+
+LOOP BEGIN at parallelCode.c(68,5)
+   remark #15543: loop was not vectorized: loop with function call not considered an optimization candidate.   [ parallelCode.c(94,7) ]
+LOOP END
+===========================================================================
+
+Begin optimization report for: outputBody(int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (outputBody(int)) [2] parallelCode.c(169,24)
+  -> EXTERN: (170,3) printf(const char *__restrict__, ...)
+
+===========================================================================
+
+Begin optimization report for: testInit2()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (testInit2()) [3] parallelCode.c(150,18)
+
+===========================================================================
+
+Begin optimization report for: testInit()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (testInit()) [4] parallelCode.c(136,17)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at parallelCode.c(139,3)
+   remark #15300: LOOP WAS VECTORIZED
+   remark #15449: unmasked aligned unit stride stores: 5 
+   remark #15475: --- begin vector loop cost summary ---
+   remark #15476: scalar loop cost: 18 
+   remark #15477: vector loop cost: 8.500 
+   remark #15478: estimated potential speedup: 4.230 
+   remark #15479: lightweight vector operations: 17 
+   remark #15487: type converts: 2 
+   remark #15488: --- end vector loop cost summary ---
+   remark #25015: Estimate of max trip count of loop=625
+LOOP END
+===========================================================================
+
+Begin optimization report for: randomInit()
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (randomInit()) [5] parallelCode.c(118,19)
+  -> EXTERN: (122,30) rand(void)
+  -> EXTERN: (124,34) rand(void)
+  -> EXTERN: (125,34) rand(void)
+  -> EXTERN: (127,31) rand(void)
+  -> EXTERN: (128,31) rand(void)
+  -> EXTERN: (130,3) printf(const char *__restrict__, ...)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at parallelCode.c(121,3)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed OUTPUT dependence between  line 122 and  line 128
+LOOP END
+===========================================================================
